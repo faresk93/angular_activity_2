@@ -1,0 +1,28 @@
+<li [ngClass]="{
+  'list-group-item my-2 py-3': true,
+  'list-group-item-success': loveIts > 0,
+  'list-group-item-danger': loveIts < 0,
+  'list-group-item-light': loveIts === 0
+  
+  }">
+    <div class="d-flex justify-content-between">
+        <h4>Titre du post: {{postTitle}}</h4>
+        <span>{{postDate | date: "dd/M/yyyy, hh:mm a"}}</span>
+    </div>
+
+    <p>{{postContent}}</p>
+
+    <div class="d-flex justify-content-between">
+        <div class="d-inline-block">
+            <button (click)="onLoveIt()" class="btn btn-success mx-1">Love It
+            </button>
+
+            <button (click)="onHateIt()" class="btn btn-danger mx-1">Don't Love It
+            </button>
+
+            <span *ngIf="loveIts">LoveIts: {{ loveIts }}</span>
+        </div>
+        <button class="btn btn-danger" (click)="onDelete(post)">Delete It</button>
+    </div>
+
+</li>

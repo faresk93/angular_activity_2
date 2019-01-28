@@ -1,0 +1,19 @@
+<div class="row">
+  <div class="col-sm-8 col-offset-2">
+    <h2 class="text-warning text-center">Sign In</h2>
+    <form (ngSubmit)="onSubmit()" [formGroup]="signInForm">
+      <div class="form-group">
+        <label for="title">Email Address</label>
+        <input id="title" formControlName="email" type="email" class="form-control" placeholder="Please enter a valide email address">
+      </div>
+      <div class="form-group">
+        <label for="content">Password</label>
+        <input id="content" type="password" class="form-control" formControlName="password" placeholder="Please Type your password">
+      </div>
+      <div class="alert alert-danger" *ngIf="errorMessage">
+        <small class="text-danger">{{errorMessage}}</small>
+      </div>
+      <button class="btn btn-success" type="submit" [disabled] = "signInForm.invalid">Save</button>
+    </form>
+  </div>
+</div>
