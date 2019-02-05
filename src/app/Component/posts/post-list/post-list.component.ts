@@ -16,6 +16,7 @@ export class PostListComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+        this.postService.getPosts();
         this.postsSubscription = this.postService.postsSubject.subscribe(
             (posts: any[]) => {
                 this.posts = posts;
@@ -33,6 +34,6 @@ export class PostListComponent implements OnInit, OnDestroy {
     // }
 
     onFetch() {
-        this.postService.fetchPostsFromDatabase();
+        this.postService.getPosts();
     }
 }

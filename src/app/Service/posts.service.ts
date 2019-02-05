@@ -2,35 +2,14 @@ import {Injectable} from '@angular/core';
 import {Post} from '../Model/posts/posts.model';
 import {Subject} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
+import * as firebase from 'firebase';
 
 @Injectable({
     providedIn: 'root'
 })
 export class PostsService {
     now = Date();
-    posts: Post[] = [
-        {
-            id: 1,
-            title: 'Mon premier post',
-            content: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam, cumque ',
-            loveIts: 3,
-            created_at: this.now
-        },
-        {
-            id: 2,
-            title: 'Mon deuxième post',
-            content: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ali',
-            loveIts: 3,
-            created_at: this.now
-        },
-        {
-            id: 3,
-            title: 'Encore un post',
-            content: 'Lorem ipsum dolor sit amet, consectetur adipisicing e',
-            loveIts: -2,
-            created_at: this.now
-        },
-    ];
+    posts: Post[] = [];
 
     postsSubject = new Subject<Post[]>();
 
@@ -38,7 +17,7 @@ export class PostsService {
     }
 
     emitPostSubject() {
-        this.postsSubject.next(this.posts.slice());
+        this.postsSubject.next(this.posts.reverse().slice());
     }
 
     loveIt(index: number) {
@@ -53,19 +32,25 @@ export class PostsService {
         this.emitPostSubject();
     }
 
-    addPost(title: string, content: string) {
-        const newPost = {
-            id: 0,
-            title: '',
-            content: '',
-            loveIts: 0,
-            created_at: Date()
-        };
-        newPost.id = this.posts[(this.posts.length - 1)].id + 1;
-        newPost.title = title;
-        newPost.content = content;
+    // addPost(title: string, content: string) {
+    //     const newPost = {
+    //         id: 0,
+    //         title: '',
+    //         content: '',
+    //         loveIts: 0,
+    //         created_at: Date()
+    //     };
+    //     newPost.id = this.posts[(this.posts.length - 1)].id + 1;
+    //     newPost.title = title;
+    //     newPost.content = content;
+    //
+    //     this.posts.push(newPost);
+    //     this.emitPostSubject();
+    // }
 
+    addPost(newPost: Post) {
         this.posts.push(newPost);
+        this.savePosts();
         this.emitPostSubject();
     }
 
@@ -81,18 +66,18 @@ export class PostsService {
         this.emitPostSubject();
     }
 
-    // savePostsInDatabase() {
-    //     // var url =
-    //     this.httpClient.put('https://angular-activity-a8a17.firebaseio.com/posts.json', this.posts)
-    //         .subscribe(
-    //             () => {
-    //                 console.log('save complete');
-    //             },
-    //             (error) => {
-    //                 console.log(error);
-    //             }
-    //         );
-    // }
+    savePostsInDatabase() {
+        // var url =
+        this.httpClient.put('https://angular-activity-a8a17.firebaseio.com/posts.json', this.posts)
+            .subscribe(
+                () => {
+                    console.log('save complete');
+                },
+                (error) => {
+                    console.log(error);
+                }
+            );
+    }
 
     fetchPostsFromDatabase() {
         // var url =
@@ -106,5 +91,17 @@ export class PostsService {
                     console.log(error);
                 }
             );
+    }
+
+    savePosts() {
+        firebase.database().ref('/posts').set(this.posts);
+    }
+
+    getPosts() {
+        firebase.database().ref('/posts')
+            .on('value', (data) => {
+                this.posts = data.val() ? data.val() : [];
+                this.emitPostSubject();
+            });
     }
 }
