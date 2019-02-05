@@ -8,33 +8,11 @@ import {HttpClient} from '@angular/common/http';
 })
 export class PostsService {
     now = Date();
-    posts: Post[] = [
-        {
-            id: 1,
-            title: 'Mon premier post',
-            content: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam, cumque ',
-            loveIts: 3,
-            created_at: this.now
-        },
-        {
-            id: 2,
-            title: 'Mon deuxième post',
-            content: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ali',
-            loveIts: 3,
-            created_at: this.now
-        },
-        {
-            id: 3,
-            title: 'Encore un post',
-            content: 'Lorem ipsum dolor sit amet, consectetur adipisicing e',
-            loveIts: -2,
-            created_at: this.now
-        },
-    ];
-
+    posts: Post[] = [];
     postsSubject = new Subject<Post[]>();
 
     constructor(private httpClient: HttpClient) {
+        this.fetchData();
     }
 
     emitPostSubject() {
@@ -44,63 +22,80 @@ export class PostsService {
     loveIt(index: number) {
         let loveIts = this.posts[index].loveIts;
         this.posts[index].loveIts = ++loveIts;
+        let post = this.posts[index];
         this.emitPostSubject();
+        this.httpClient.put('http://127.0.0.1:8000/api/posts/' + post.id, post)
+            .subscribe(
+                () => {
+                    this.fetchData();
+                },
+                (error) => {
+                    console.log(error);
+                }
+            );
     }
 
     hateIt(index: number) {
         let loveIts = this.posts[index].loveIts;
         this.posts[index].loveIts = --loveIts;
+        let post = this.posts[index];
+        this.httpClient.put('http://127.0.0.1:8000/api/posts/' + post.id, post)
+            .subscribe(
+                () => {
+                    this.fetchData();
+                },
+                (error) => {
+                    console.log(error);
+                }
+            );
         this.emitPostSubject();
     }
 
     addPost(title: string, content: string) {
+
         const newPost = {
-            id: 0,
             title: '',
             content: '',
             loveIts: 0,
-            created_at: Date()
+            createdAt: null
         };
-        newPost.id = this.posts[(this.posts.length - 1)].id + 1;
         newPost.title = title;
         newPost.content = content;
+        newPost.createdAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-        this.posts.push(newPost);
-        this.emitPostSubject();
+
+        this.httpClient.post('http://127.0.0.1:8000/api/posts.json', newPost)
+            .subscribe(
+                () => {
+                    console.log('save complete');
+                    this.fetchData();
+                },
+                (error) => {
+                    console.log(error);
+                }
+            );
     }
 
     deletePost(post: Post) {
-        const bookIndex = this.posts.findIndex(
-            (postToBeRemoved) => {
-                if ((postToBeRemoved === post)) {
-                    return true;
+        this.httpClient.delete('http://127.0.0.1:8000/api/posts/' + post.id)
+            .subscribe(
+                () => {
+                    console.log('delete complete');
+                    this.fetchData();
+                },
+                (error) => {
+                    console.log(error);
                 }
-            }
-        );
-        this.posts.splice(bookIndex, 1);
-        this.emitPostSubject();
+            );
     }
 
-    // savePostsInDatabase() {
-    //     // var url =
-    //     this.httpClient.put('https://angular-activity-a8a17.firebaseio.com/posts.json', this.posts)
-    //         .subscribe(
-    //             () => {
-    //                 console.log('save complete');
-    //             },
-    //             (error) => {
-    //                 console.log(error);
-    //             }
-    //         );
-    // }
-
-    fetchPostsFromDatabase() {
-        // var url =
-        this.httpClient.get<any[]>('https://angular-activity-a8a17.firebaseio.com/posts.json')
+    fetchData() {
+        this.httpClient.get<any[]>('http://127.0.0.1:8000/api/posts.json')
             .subscribe(
                 (response) => {
                     this.posts = response;
                     this.emitPostSubject();
+                    console.log(response);
                 },
                 (error) => {
                     console.log(error);
